@@ -17,7 +17,7 @@ def env_list(name, default=""):
     return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
 
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-key-change-me")
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-secret-key-replace-this-in-production")
 DEBUG = env_bool("DEBUG", True)
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
 
