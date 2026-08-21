@@ -1,32 +1,51 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + TypeScript client for the store, built with Vite and styled with Tailwind CSS.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Requires Node 20+ and a running backend.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+cp .env.example .env
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The dev server runs on http://localhost:5173. `npm run build` produces a static bundle in `dist/`.
+
+## Environment variables
+
+| Variable       | Default                     | Notes                                     |
+| -------------- | --------------------------- | ----------------------------------------- |
+| `VITE_API_URL` | `http://localhost:8000/api` | Read at build time, not at runtime         |
+
+Because Vite inlines this value into the bundle, the Docker image takes it as a build argument.
+
+## Pages
+
+| Route                   | What it does                                                       |
+| ----------------------- | ------------------------------------------------------------------ |
+| `/login`                | Signs in and stores the token                                       |
+| `/products`             | Product grid with pagination and a location filter                  |
+| `/products/:id`         | Product details and the buy button                                  |
+| `/receipt/:reference`   | Receipt for a completed order                                       |
+
+Everything except `/login` sits behind a route guard that redirects anonymous visitors to the login
+page, remembering where they were headed.
+
+## How it is put together
+
+`src/context/AuthContext.tsx` holds the token and exposes `login` / `logout`. `src/api/client.ts` is
+an axios instance that attaches the token to every request and, on a `401`, clears it and sends the
+user back to the login page — so an expired session never leaves a page half-loaded.
+
+The listing page keeps `page` and `location` in the URL query string. That makes the current view
+shareable and reloadable, and it means the browser back button steps through pagination the way a
+user expects.
+
+The receipt page prefers the order it was handed during navigation and only calls the API when it
+was opened directly, for example after a refresh.
+
+Layouts are mobile-first: the catalog is a single column on phones and widens to four columns on
+large screens, and both breakpoints are exercised by the pages above.
