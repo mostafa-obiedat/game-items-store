@@ -3,7 +3,9 @@ import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import Login from './pages/Login'
+import ProductDetail from './pages/ProductDetail'
 import Products from './pages/Products'
+import Receipt from './pages/Receipt'
 
 export default function App() {
   return (
@@ -14,6 +16,8 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/products" element={<Products />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/receipt/:reference" element={<Receipt />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/products" replace />} />
