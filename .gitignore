@@ -1,0 +1,27 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.sqlite3
+
+# node
+node_modules/
+dist/
+*.local
+
+# env
+.env
+.env.*
+!.env.example
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# local notes and docs
+*.pdf
+.claude/
+CLAUDE.md
