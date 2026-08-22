@@ -11,7 +11,9 @@ const PAGE_SIZE = 12
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const page = Number(searchParams.get('page') ?? 1)
+  // The query string is user editable, so fall back rather than asking for page NaN.
+  const parsedPage = Number(searchParams.get('page'))
+  const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1
   const location = searchParams.get('location') ?? ''
 
   const [products, setProducts] = useState<Product[]>([])
