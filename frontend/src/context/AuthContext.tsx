@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import api, { requestAccessToken, setAccessToken } from '../api/client'
+import api, { requestSession, setAccessToken } from '../api/client'
 
 interface AuthValue {
   username: string | null
@@ -13,33 +13,28 @@ interface AuthValue {
 
 const AuthContext = createContext<AuthValue | null>(null)
 
-const USERNAME_KEY = 'username'
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
-  const [username, setUsername] = useState<string | null>(() =>
-    localStorage.getItem(USERNAME_KEY),
-  )
+  const [username, setUsername] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // The access token only lives in memory, so after a reload the refresh cookie is
-    // what brings the session back.
-    requestAccessToken()
-      .then(setToken)
-      .catch(() => {
-        setUsername(null)
-        localStorage.removeItem(USERNAME_KEY)
+    // Nothing about the session is kept on the client, so after a reload the refresh
+    // cookie is what brings both the token and the current user back.
+    requestSession()
+      .then((session) => {
+        setToken(session.access)
+        setUsername(session.username)
       })
+      .catch(() => undefined)
       .finally(() => setReady(true))
   }, [])
 
   const login = useCallback(async (name: string, password: string) => {
     const { data } = await api.post('/auth/login/', { username: name, password })
     setAccessToken(data.access)
-    localStorage.setItem(USERNAME_KEY, name)
     setToken(data.access)
-    setUsername(name)
+    setUsername(data.username)
   }, [])
 
   const logout = useCallback(async () => {
@@ -48,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await api.post('/auth/logout/')
     } finally {
       setAccessToken(null)
-      localStorage.removeItem(USERNAME_KEY)
       setToken(null)
       setUsername(null)
     }

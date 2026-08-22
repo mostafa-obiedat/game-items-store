@@ -22,12 +22,17 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+export interface Session {
+  access: string
+  username: string
+}
+
 /** Trade the refresh cookie for a new access token. Rejects when there is no valid session. */
-export async function requestAccessToken() {
+export async function requestSession() {
   // A bare axios call, so a failure here cannot re-enter the interceptor below.
   const { data } = await axios.post(`${baseURL}/auth/refresh/`, {}, { withCredentials: true })
   accessToken = data.access
-  return data.access as string
+  return data as Session
 }
 
 // While one refresh is in flight, other failed requests wait on the same promise
@@ -36,9 +41,11 @@ let refreshing: Promise<string> | null = null
 
 function refreshAccessToken() {
   if (!refreshing) {
-    refreshing = requestAccessToken().finally(() => {
-      refreshing = null
-    })
+    refreshing = requestSession()
+      .then((session) => session.access)
+      .finally(() => {
+        refreshing = null
+      })
   }
   return refreshing
 }

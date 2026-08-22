@@ -32,12 +32,18 @@ class AuthCookieTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIsNone(response.cookies.get(REFRESH_COOKIE))
 
+    def test_login_returns_the_current_user(self):
+        response = self.login()
+        self.assertEqual(response.data["username"], "tester")
+
     def test_refresh_uses_the_cookie(self):
         self.login()
         response = self.client.post(reverse("token-refresh"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
+        # Sent back so the client does not have to remember who is signed in.
+        self.assertEqual(response.data["username"], "tester")
 
     def test_refresh_without_a_cookie_is_rejected(self):
         response = self.client.post(reverse("token-refresh"))

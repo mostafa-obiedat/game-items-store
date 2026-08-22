@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -41,7 +42,9 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
 
         tokens = serializer.validated_data
-        response = Response({"access": str(tokens["access"])})
+        response = Response(
+            {"access": str(tokens["access"]), "username": serializer.user.username}
+        )
         set_refresh_cookie(response, tokens["refresh"])
         return response
 
@@ -68,7 +71,15 @@ class RefreshView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        return Response({"access": str(refresh.access_token)})
+        # Returned alongside the token so the client never has to keep its own copy
+        # of who is signed in.
+        user = get_user_model().objects.filter(pk=refresh["user_id"]).first()
+        if user is None:
+            return Response(
+                {"detail": "Account no longer exists."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        return Response({"access": str(refresh.access_token), "username": user.username})
 
 
 class LogoutView(APIView):

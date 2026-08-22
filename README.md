@@ -87,7 +87,8 @@ endpoint is private unless it explicitly opts out. Only login, refresh and the d
 
 **No token is readable by JavaScript.** The refresh token is set as an `httpOnly` cookie, so a script
 running on the page cannot read it; the short-lived access token is held in a module variable in
-memory and never reaches `localStorage`. When a request comes back `401`, the client quietly trades
+memory. The client keeps nothing in `localStorage` at all — even the signed-in username comes back
+from the API rather than being cached. When a request comes back `401`, the client quietly trades
 the cookie for a new access token and replays the request, so a long session never interrupts the
 user, and a page reload restores the session from the cookie alone.
 
