@@ -71,8 +71,8 @@ export default function Receipt() {
             <dd className="text-right">{formatDate(order.created_at)}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Order reference</dt>
-            <dd className="text-right font-mono text-xs break-all">{order.reference}</dd>
+            <dt className="text-slate-500">Order number</dt>
+            <dd className="text-right font-mono font-medium tracking-wide">{order.reference}</dd>
           </div>
         </dl>
 
