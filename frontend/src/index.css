@@ -3,3 +3,17 @@
 body {
   @apply bg-slate-100 text-slate-900 antialiased;
 }
+
+/* Tailwind 4 resets buttons to the default arrow, so put the pointer back. */
+button:not(:disabled),
+select,
+[role="button"] {
+  cursor: pointer;
+}
+
+/* Options do not inherit the select's font size, so the open list renders larger
+   than the control itself. */
+select,
+select option {
+  font-size: 0.875rem;
+}
