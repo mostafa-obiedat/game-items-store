@@ -61,8 +61,9 @@ header.
 
 | Method | Path                        | Purpose                                  |
 | ------ | --------------------------- | ---------------------------------------- |
-| POST   | `/api/auth/login/`          | Exchange credentials for tokens          |
-| POST   | `/api/auth/refresh/`        | Get a new access token                   |
+| POST   | `/api/auth/login/`          | Exchange credentials for an access token |
+| POST   | `/api/auth/refresh/`        | Get a new access token from the cookie   |
+| POST   | `/api/auth/logout/`         | Clear the refresh cookie                 |
 | GET    | `/api/products/`            | Paginated product list                   |
 | GET    | `/api/products/{id}/`       | Single product                           |
 | POST   | `/api/orders/`              | Buy one product, returns the receipt     |

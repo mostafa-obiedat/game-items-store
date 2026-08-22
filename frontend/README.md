@@ -36,12 +36,21 @@ page, remembering where they were headed.
 
 ## How it is put together
 
-`src/context/AuthContext.tsx` holds the tokens and exposes `login` / `logout`. `src/api/client.ts` is
-an axios instance that attaches the access token to every request. When one comes back `401`, it
-trades the refresh token for a new access token and replays the request once, so an hour-old tab
-keeps working instead of dropping the user on the login page mid-task. If the refresh itself fails,
-the tokens are cleared and the user is sent to `/login`. Requests that fail while a refresh is
-already in flight wait on that same refresh rather than each starting their own.
+`src/context/AuthContext.tsx` exposes `login` / `logout` and the current user. `src/api/client.ts`
+keeps the access token in a module variable — deliberately not in `localStorage` — and attaches it to
+every request. The refresh token never reaches the client at all: it is an `httpOnly` cookie, which
+is why the axios instance is created with `withCredentials`.
+
+When a request comes back `401`, the client posts to `/auth/refresh/`, gets a new access token from
+the cookie and replays the request once, so an hour-old tab keeps working instead of dropping the
+user on the login page mid-task. Requests that fail while a refresh is already in flight wait on that
+same refresh rather than each starting their own. If the refresh itself fails, the user is sent to
+`/login`.
+
+Because the access token only lives in memory, it is gone after a reload. On mount the provider tries
+one silent refresh to rebuild the session from the cookie, and route guards wait for that check
+(`ready`) before deciding anything — otherwise a reload would bounce a signed-in user to the login
+page. Signing out calls the API, since only the server can clear an `httpOnly` cookie.
 
 The listing page keeps `page` and `location` in the URL query string. That makes the current view
 shareable and reloadable, and it means the browser back button steps through pagination the way a
