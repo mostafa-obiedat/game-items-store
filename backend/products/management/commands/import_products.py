@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from products.models import Location, Product
+from products.models import Location, Product, build_slug
 
 REQUIRED_COLUMNS = {"id", "title", "description", "price", "location"}
 DEFAULT_PATH = Path(settings.BASE_DIR) / "data" / "items.csv"
@@ -29,6 +29,8 @@ class Command(BaseCommand):
             raise CommandError(f"CSV file not found: {path}")
 
         created = updated = skipped = 0
+        # Rows are processed in file order, so slugs come out the same on every run.
+        taken_slugs = set()
 
         with path.open(newline="", encoding="utf-8-sig") as handle:
             reader = csv.DictReader(handle)
@@ -45,6 +47,7 @@ class Command(BaseCommand):
                         continue
 
                     product_id, fields = parsed
+                    fields["slug"] = build_slug(fields["title"], taken_slugs)
                     _, was_created = Product.objects.update_or_create(
                         id=product_id, defaults=fields
                     )

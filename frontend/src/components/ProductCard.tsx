@@ -6,7 +6,7 @@ import { formatPrice } from '../utils/format'
 export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
-      to={`/products/${product.id}`}
+      to={`/products/${product.slug}`}
       className="flex flex-col rounded-xl bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">

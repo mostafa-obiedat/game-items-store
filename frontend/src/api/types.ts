@@ -2,6 +2,7 @@ export type Location = 'JO' | 'SA'
 
 export interface Product {
   id: number
+  slug: string
   title: string
   description: string
   price: string

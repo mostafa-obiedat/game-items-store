@@ -16,6 +16,7 @@ class ProductApiTests(APITestCase):
             Product.objects.create(
                 id=i,
                 title=f"Item {i}",
+                slug=f"item-{i}",
                 description="something",
                 price=Decimal("10.50"),
                 location="JO" if i % 2 else "SA",
@@ -70,13 +71,14 @@ class ProductApiTests(APITestCase):
         response = self.client.get(reverse("product-list"), {"location": "XX"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_detail_returns_product(self):
+    def test_detail_is_looked_up_by_slug(self):
         self.authenticate()
-        response = self.client.get(reverse("product-detail", args=[3]))
+        response = self.client.get(reverse("product-detail", args=["item-3"]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Item 3")
+        self.assertEqual(response.data["slug"], "item-3")
 
     def test_missing_product_returns_404(self):
         self.authenticate()
-        response = self.client.get(reverse("product-detail", args=[9999]))
+        response = self.client.get(reverse("product-detail", args=["no-such-item"]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

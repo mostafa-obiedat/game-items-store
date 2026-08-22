@@ -7,7 +7,7 @@ import LocationBadge from '../components/LocationBadge'
 import { formatPrice } from '../utils/format'
 
 export default function ProductDetail() {
-  const { id } = useParams()
+  const { slug } = useParams()
   const navigate = useNavigate()
 
   const [product, setProduct] = useState<Product | null>(null)
@@ -22,7 +22,7 @@ export default function ProductDetail() {
     setError('')
 
     api
-      .get<Product>(`/products/${id}/`)
+      .get<Product>(`/products/${slug}/`)
       .then(({ data }) => active && setProduct(data))
       .catch((err) => active && setError(errorMessage(err, 'This product could not be found.')))
       .finally(() => active && setLoading(false))
@@ -30,13 +30,15 @@ export default function ProductDetail() {
     return () => {
       active = false
     }
-  }, [id])
+  }, [slug])
 
   async function handleBuy() {
+    if (!product) return
+
     setBuying(true)
     setBuyError('')
     try {
-      const { data } = await api.post<Order>('/orders/', { product_id: Number(id) })
+      const { data } = await api.post<Order>('/orders/', { product_id: product.id })
       // Hand the receipt over directly so the next page renders without a second request.
       navigate(`/receipt/${data.reference}`, { state: { order: data } })
     } catch (err) {

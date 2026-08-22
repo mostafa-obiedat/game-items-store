@@ -18,6 +18,7 @@ class OrderApiTests(APITestCase):
         cls.other_user = User.objects.create_user(username="someone", password="pass12345")
         cls.product = Product.objects.create(
             title="Mystic Wand",
+            slug="mystic-wand",
             description="Casts powerful spells",
             price=Decimal("200.00"),
             location="SA",
