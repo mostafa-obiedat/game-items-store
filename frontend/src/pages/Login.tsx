@@ -5,7 +5,7 @@ import { errorMessage } from '../api/errors'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
-  const { isAuthenticated, login } = useAuth()
+  const { isAuthenticated, ready, login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -13,6 +13,11 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Avoid flashing the form to someone who still has a valid session.
+  if (!ready) {
+    return null
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/products" replace />

@@ -31,13 +31,14 @@ class ProductApiTests(APITestCase):
         response = self.client.get(reverse("product-list"))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_login_returns_tokens(self):
+    def test_login_returns_access_token(self):
         response = self.client.post(
             reverse("login"), {"username": "tester", "password": "pass12345"}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
-        self.assertIn("refresh", response.data)
+        # The refresh token belongs in the cookie, never in a body the page can read.
+        self.assertNotIn("refresh", response.data)
 
     def test_login_rejects_bad_password(self):
         response = self.client.post(

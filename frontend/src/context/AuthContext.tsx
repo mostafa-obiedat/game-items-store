@@ -1,13 +1,14 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import api, { clearTokens, getToken, setTokens } from '../api/client'
+import api, { requestAccessToken, setAccessToken } from '../api/client'
 
 interface AuthValue {
-  token: string | null
   username: string | null
   isAuthenticated: boolean
+  /** False until the stored session has been checked, so guards do not redirect too early. */
+  ready: boolean
   login: (username: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthValue | null>(null)
@@ -15,29 +16,47 @@ const AuthContext = createContext<AuthValue | null>(null)
 const USERNAME_KEY = 'username'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setTokenState] = useState<string | null>(() => getToken())
+  const [token, setToken] = useState<string | null>(null)
   const [username, setUsername] = useState<string | null>(() =>
     localStorage.getItem(USERNAME_KEY),
   )
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    // The access token only lives in memory, so after a reload the refresh cookie is
+    // what brings the session back.
+    requestAccessToken()
+      .then(setToken)
+      .catch(() => {
+        setUsername(null)
+        localStorage.removeItem(USERNAME_KEY)
+      })
+      .finally(() => setReady(true))
+  }, [])
 
   const login = useCallback(async (name: string, password: string) => {
     const { data } = await api.post('/auth/login/', { username: name, password })
-    setTokens(data.access, data.refresh)
+    setAccessToken(data.access)
     localStorage.setItem(USERNAME_KEY, name)
-    setTokenState(data.access)
+    setToken(data.access)
     setUsername(name)
   }, [])
 
-  const logout = useCallback(() => {
-    clearTokens()
-    localStorage.removeItem(USERNAME_KEY)
-    setTokenState(null)
-    setUsername(null)
+  const logout = useCallback(async () => {
+    try {
+      // Clears the refresh cookie; only the server can do that.
+      await api.post('/auth/logout/')
+    } finally {
+      setAccessToken(null)
+      localStorage.removeItem(USERNAME_KEY)
+      setToken(null)
+      setUsername(null)
+    }
   }, [])
 
   const value = useMemo(
-    () => ({ token, username, isAuthenticated: Boolean(token), login, logout }),
-    [token, username, login, logout],
+    () => ({ username, isAuthenticated: Boolean(token), ready, login, logout }),
+    [token, username, ready, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

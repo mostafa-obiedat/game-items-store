@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "drf_spectacular",
+    "accounts",
     "products",
     "orders",
 ]
@@ -121,3 +122,6 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000"
 )
+
+# The client has to send the refresh cookie on auth calls.
+CORS_ALLOW_CREDENTIALS = True
