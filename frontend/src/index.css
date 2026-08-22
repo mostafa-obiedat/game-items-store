@@ -17,3 +17,13 @@ select,
 select option {
   font-size: 0.875rem;
 }
+
+/* Phones draw the option list with the platform picker and ignore small sizes, so
+   match the control to it. 16px is also the threshold below which iOS zooms in on
+   focus. */
+@media (max-width: 640px) {
+  select,
+  select option {
+    font-size: 1rem;
+  }
+}
