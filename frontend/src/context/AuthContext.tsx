@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import api, { clearToken, getToken, setToken } from '../api/client'
+import api, { clearTokens, getToken, setTokens } from '../api/client'
 
 interface AuthValue {
   token: string | null
@@ -22,14 +22,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (name: string, password: string) => {
     const { data } = await api.post('/auth/login/', { username: name, password })
-    setToken(data.access)
+    setTokens(data.access, data.refresh)
     localStorage.setItem(USERNAME_KEY, name)
     setTokenState(data.access)
     setUsername(name)
   }, [])
 
   const logout = useCallback(() => {
-    clearToken()
+    clearTokens()
     localStorage.removeItem(USERNAME_KEY)
     setTokenState(null)
     setUsername(null)

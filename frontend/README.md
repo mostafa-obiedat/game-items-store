@@ -36,9 +36,12 @@ page, remembering where they were headed.
 
 ## How it is put together
 
-`src/context/AuthContext.tsx` holds the token and exposes `login` / `logout`. `src/api/client.ts` is
-an axios instance that attaches the token to every request and, on a `401`, clears it and sends the
-user back to the login page — so an expired session never leaves a page half-loaded.
+`src/context/AuthContext.tsx` holds the tokens and exposes `login` / `logout`. `src/api/client.ts` is
+an axios instance that attaches the access token to every request. When one comes back `401`, it
+trades the refresh token for a new access token and replays the request once, so an hour-old tab
+keeps working instead of dropping the user on the login page mid-task. If the refresh itself fails,
+the tokens are cleared and the user is sent to `/login`. Requests that fail while a refresh is
+already in flight wait on that same refresh rather than each starting their own.
 
 The listing page keeps `page` and `location` in the URL query string. That makes the current view
 shareable and reloadable, and it means the browser back button steps through pagination the way a

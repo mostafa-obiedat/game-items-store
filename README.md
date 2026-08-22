@@ -79,7 +79,9 @@ signed-in user.
 **Authentication is deny-by-default.** DRF is configured with `IsAuthenticated` globally, so a new
 endpoint is private unless it explicitly opts out. Only login, refresh and the docs are public.
 
-**The token is kept in `localStorage`.** This keeps the client simple and survives a page refresh.
+**Tokens are kept in `localStorage`.** This keeps the client simple and survives a page refresh. The
+client refreshes an expired access token in the background and replays the failed request, so a long
+session does not interrupt the user.
 The trade-off is that it is readable by JavaScript, so it is vulnerable to XSS; a production build
 would be better served by a httpOnly refresh cookie with a short-lived in-memory access token. That
 felt like the wrong complexity to take on here, so it is a deliberate, documented choice rather than
